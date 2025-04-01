@@ -1,0 +1,449 @@
+# Trivia Interactiva de Inteligencia Artificial
+
+Aquí tienes una aplicación web completa en un solo archivo HTML que incluye CSS y JavaScript para una trivia de IA con las características que solicitaste:
+
+```html
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trivia de Inteligencia Artificial</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 600px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        .intro {
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .question-container {
+            display: none;
+        }
+
+        .question {
+            font-size: 1.2rem;
+            margin-bottom: 25px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .option {
+            background-color: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            padding: 12px 15px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+        }
+
+        .option:hover {
+            background-color: #e9ecef;
+            border-color: #adb5bd;
+        }
+
+        .option.selected {
+            border-color: #3498db;
+            background-color: #e3f2fd;
+        }
+
+        .option.correct {
+            background-color: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+        }
+
+        .option.incorrect {
+            background-color: #f8d7da;
+            border-color: #dc3545;
+            color: #721c24;
+        }
+
+        .btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .results {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .score {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .feedback {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+        }
+
+        .progress-container {
+            width: 100%;
+            background-color: #e9ecef;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            height: 10px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            border-radius: 10px;
+            background-color: #3498db;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .question-counter {
+            margin-bottom: 15px;
+            color: #7f8c8d;
+            font-weight: bold;
+        }
+
+        .restart-btn {
+            background-color: #2ecc71;
+            margin-top: 20px;
+        }
+
+        .restart-btn:hover {
+            background-color: #27ae60;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Trivia de Inteligencia Artificial</h1>
+        
+        <div id="intro" class="intro">
+            <p>¡Bienvenido a la trivia de IA! Responde 10 preguntas sobre conceptos básicos de Inteligencia Artificial.</p>
+            <p>Cada pregunta tiene una sola respuesta correcta. Al final obtendrás una calificación según tus aciertos.</p>
+            <button id="start-btn" class="btn">Comenzar</button>
+        </div>
+        
+        <div id="quiz-container" class="question-container">
+            <div class="question-counter">Pregunta <span id="current-question">1</span> de 10</div>
+            <div class="progress-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+            <div class="question" id="question"></div>
+            <div class="options" id="options"></div>
+            <button id="next-btn" class="btn" disabled>Siguiente</button>
+        </div>
+        
+        <div id="results" class="results">
+            <div class="score">Tu calificación: <span id="final-score">0</span>/10</div>
+            <div class="feedback" id="feedback"></div>
+            <button id="restart-btn" class="btn restart-btn">Jugar de nuevo</button>
+        </div>
+    </div>
+
+    <script>
+        // Preguntas y respuestas
+        const questions = [
+            {
+                question: "¿Qué significa IA?",
+                options: [
+                    "Inteligencia Aumentada",
+                    "Inteligencia Artificial",
+                    "Interfaz Automatizada",
+                    "Información Avanzada"
+                ],
+                answer: 1
+            },
+            {
+                question: "¿Cuál de estos es un ejemplo de aprendizaje supervisado?",
+                options: [
+                    "Clasificación de imágenes",
+                    "Juego de ajedrez autónomo",
+                    "Recomendación de productos basada en comportamiento",
+                    "Agrupación de datos no etiquetados"
+                ],
+                answer: 0
+            },
+            {
+                question: "¿Qué tipo de red neuronal es especialmente buena para procesar imágenes?",
+                options: [
+                    "Redes Neuronales Recurrentes (RNN)",
+                    "Redes Neuronales Convolucionales (CNN)",
+                    "Redes Neuronales Feedforward",
+                    "Redes Neuronales de Memoria a Largo Plazo (LSTM)"
+                ],
+                answer: 1
+            },
+            {
+                question: "¿Qué es el 'aprendizaje por refuerzo' en IA?",
+                options: [
+                    "Un sistema que aprende a base de prueba y error con recompensas",
+                    "Un método que usa grandes cantidades de datos etiquetados",
+                    "Una técnica para reducir el tamaño de los modelos",
+                    "Un algoritmo que solo funciona con supervisión humana constante"
+                ],
+                answer: 0
+            },
+            {
+                question: "¿Qué es el 'overfitting' en machine learning?",
+                options: [
+                    "Cuando el modelo se ajusta demasiado a los datos de entrenamiento y no generaliza bien",
+                    "Cuando el modelo es demasiado simple para capturar patrones en los datos",
+                    "Cuando el proceso de entrenamiento tarda demasiado",
+                    "Cuando se usan demasiadas capas en una red neuronal"
+                ],
+                answer: 0
+            },
+            {
+                question: "¿Qué técnica ayuda a prevenir el overfitting?",
+                options: [
+                    "Aumentar la complejidad del modelo",
+                    "Usar más datos de entrenamiento",
+                    "Entrenar por más épocas",
+                    "Eliminar características del dataset"
+                ],
+                answer: 1
+            },
+            {
+                question: "¿Qué es NLP en el contexto de IA?",
+                options: [
+                    "Nuevo Lenguaje de Programación",
+                    "Procesamiento Natural del Lenguaje",
+                    "Redes Neuronales Profundas",
+                    "Núcleo de Lógica Programable"
+                ],
+                answer: 1
+            },
+            {
+                question: "¿Qué algoritmo de machine learning es conocido por usar árboles de decisión?",
+                options: [
+                    "K-Means",
+                    "Regresión Lineal",
+                    "Random Forest",
+                    "Redes Neuronales"
+                ],
+                answer: 2
+            },
+            {
+                question: "¿Qué es TensorFlow?",
+                options: [
+                    "Un lenguaje de programación para IA",
+                    "Una biblioteca de aprendizaje automático desarrollada por Google",
+                    "Un tipo de arquitectura de red neuronal",
+                    "Un algoritmo de clustering"
+                ],
+                answer: 1
+            },
+            {
+                question: "¿Qué técnica de IA se usa comúnmente en los chatbots modernos?",
+                options: [
+                    "Redes Neuronales Recurrentes",
+                    "Modelos de Transformers",
+                    "Máquinas de Vectores de Soporte",
+                    "Algoritmos Genéticos"
+                ],
+                answer: 1
+            }
+        ];
+
+        // Variables del juego
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let selectedOption = null;
+        let quizStarted = false;
+
+        // Elementos del DOM
+        const introElement = document.getElementById('intro');
+        const quizContainer = document.getElementById('quiz-container');
+        const questionElement = document.getElementById('question');
+        const optionsElement = document.getElementById('options');
+        const nextButton = document.getElementById('next-btn');
+        const resultsElement = document.getElementById('results');
+        const finalScoreElement = document.getElementById('final-score');
+        const feedbackElement = document.getElementById('feedback');
+        const startButton = document.getElementById('start-btn');
+        const restartButton = document.getElementById('restart-btn');
+        const currentQuestionElement = document.getElementById('current-question');
+        const progressBar = document.getElementById('progress-bar');
+
+        // Iniciar el quiz
+        startButton.addEventListener('click', startQuiz);
+        restartButton.addEventListener('click', restartQuiz);
+
+        function startQuiz() {
+            quizStarted = true;
+            introElement.style.display = 'none';
+            quizContainer.style.display = 'block';
+            showQuestion();
+        }
+
+        function restartQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            selectedOption = null;
+            resultsElement.style.display = 'none';
+            quizContainer.style.display = 'block';
+            showQuestion();
+        }
+
+        function showQuestion() {
+            resetState();
+            const currentQuestion = questions[currentQuestionIndex];
+            currentQuestionElement.textContent = currentQuestionIndex + 1;
+            progressBar.style.width = `${(currentQuestionIndex + 1) * 10}%`;
+            
+            questionElement.textContent = currentQuestion.question;
+            
+            currentQuestion.options.forEach((option, index) => {
+                const button = document.createElement('div');
+                button.classList.add('option');
+                button.textContent = option;
+                button.addEventListener('click', () => selectOption(index));
+                optionsElement.appendChild(button);
+            });
+        }
+
+        function resetState() {
+            nextButton.disabled = true;
+            optionsElement.innerHTML = '';
+        }
+
+        function selectOption(index) {
+            selectedOption = index;
+            const options = document.querySelectorAll('.option');
+            
+            options.forEach((option, i) => {
+                if (i === index) {
+                    option.classList.add('selected');
+                } else {
+                    option.classList.remove('selected');
+                }
+            });
+            
+            nextButton.disabled = false;
+        }
+
+        nextButton.addEventListener('click', () => {
+            if (selectedOption === null) return;
+            
+            checkAnswer();
+            
+            if (currentQuestionIndex < questions.length - 1) {
+                currentQuestionIndex++;
+                showQuestion();
+            } else {
+                showResults();
+            }
+            
+            selectedOption = null;
+        });
+
+        function checkAnswer() {
+            const options = document.querySelectorAll('.option');
+            const currentQuestion = questions[currentQuestionIndex];
+            
+            options.forEach((option, index) => {
+                option.classList.remove('selected');
+                option.style.pointerEvents = 'none'; // Deshabilitar clics adicionales
+                
+                if (index === currentQuestion.answer) {
+                    option.classList.add('correct');
+                } else if (index === selectedOption && selectedOption !== currentQuestion.answer) {
+                    option.classList.add('incorrect');
+                }
+            });
+            
+            if (selectedOption === currentQuestion.answer) {
+                score++;
+            }
+        }
+
+        function showResults() {
+            quizContainer.style.display = 'none';
+            resultsElement.style.display = 'block';
+            
+            finalScoreElement.textContent = score;
+            
+            let feedback = '';
+            if (score === 10) {
+                feedback = '¡Perfecto! Eres un experto en IA.';
+            } else if (score >= 7) {
+                feedback = '¡Muy bien! Tienes buenos conocimientos de IA.';
+            } else if (score >= 4) {
+                feedback = 'No está mal, pero podrías aprender más sobre IA.';
+            } else {
+                feedback = 'Parece que necesitas estudiar más sobre IA. ¡Sigue aprendiendo!';
+            }
+            
+            feedbackElement.textContent = feedback;
+        }
+    </script>
+</body>
+</html>
+```
+
+## Características de la aplicación:
+
+1. **Diseño atractivo y responsive** para estudiantes universitarios
+2. **10 preguntas de opción múltiple** sobre conceptos básicos de IA
+3. **Sistema de puntuación** que muestra resultados al final
+4. **Retroalimentación visual**:
+   - Respuestas correctas en verde
+   - Respuestas incorrectas en rojo
+5. **Validación de interacción**:
+   - El botón "Siguiente" solo se activa después de seleccionar una respuesta
+   - No se pueden cambiar las respuestas una vez seleccionadas
+6. **Barra de progreso** que muestra el avance
+7. **Mensajes personalizados** según el puntaje obtenido
+8. **Opción para reiniciar** el juego al finalizar
+
+Puedes copiar este código completo en un archivo HTML y abrirlo en cualquier navegador moderno para comenzar a usar la trivia.
